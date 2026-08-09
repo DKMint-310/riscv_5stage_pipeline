@@ -78,3 +78,9 @@ Execute the following commands from the `sim/` directory using AMD Vivado (XSim)
 ```bash
 xvlog -sv -f filelist.f --default_timeunit 1ns/1ps
 xelab riscv_tb_top -debug typical -s tb_top -override_timeunit -timescale 1ns/1ps
+```
+### 2. Run Simulation
+
+```bash
+xsim tb_top -runall
+```
