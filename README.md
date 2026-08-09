@@ -4,7 +4,7 @@ A SystemVerilog implementation of a 32-bit 5-stage pipelined RISC-V core (RV32I 
 
 ---
 
-## 📌 DUT Overview
+## DUT Overview
 
 The core implements a classic 5-stage RISC pipeline executing integer instructions from the RV32I ISA:
 
@@ -17,7 +17,7 @@ The core implements a classic 5-stage RISC pipeline executing integer instructio
 
 ---
 
-## 🔌 Core Interface Signals
+## Interface 
 
 | Signal | Direction | Width | Description |
 |:---|:---:|:---:|:---|
@@ -33,12 +33,47 @@ The core implements a classic 5-stage RISC pipeline executing integer instructio
 
 ---
 
-## 🏗️ Core Architecture
+## Architecture
 
 ### Pipeline & Control Flow
 ```text
 [ IF Stage ] ──> [ ID Stage ] ──> [ EX Stage ] ──> [ MEM Stage ] ──> [ WB Stage ]
      │                │                 │                  │                 │
      └─────── Hazard Detection ◄────────┴────── Data Forwarding ◄────────────┘
-│   └── filelist.f             # Simulation source file manifest
-└── README.md
+
+### Module Components
+
+| Module | File Location | Role & Functionality |
+|:---|:---|:---|
+| `reg_file` | `rtl/reg_file.sv` | 32x32-bit dual-read single-write register file (`x0` hardwired to 0). |
+| `alu` | `rtl/alu.sv` | Core ALU supporting arithmetic, logic, shifts, and comparisons (`SLT`). |
+| `forwarding_unit` | `rtl/forwarding_unit.sv` | Bypasses data from `EX/MEM` and `MEM/WB` stages directly to `EX` stage operands. |
+| `hazard_unit` | `rtl/hazard_unit.sv` | Generates pipeline stalls for Load-Use dependencies and flushes on branches. |
+| `pipeline_regs` | `rtl/pipeline_regs.sv` | Inter-stage pipeline registers (`IF/ID`, `ID/EX`, `EX/MEM`, `MEM/WB`). |
+| `riscv_top` | `rtl/riscv_top.sv` | Top-level processor core integrating all 5 pipeline stages and hazard units. |
+| `riscv_if` | `tb/riscv_if.sv` | SystemVerilog interface bridging core top with memory and verification components. |
+| `riscv_mem_model` | `tb/riscv_mem_model.sv` | Unified virtual associative RAM model acting as Instruction and Data Memory. |
+| `riscv_tb_top` | `tb/riscv_tb_top.sv` | Top-level testbench module generating clock, reset, and launching simulation. |
+
+---
+
+## 🧪 Hazard Test Scenarios
+
+| Test Case / Feature | Description |
+|:---|:---|
+| **EX-to-EX Forwarding** | Direct data bypass from `EX/MEM` register to ALU input for consecutive arithmetic instructions. |
+| **MEM-to-EX Forwarding** | Data bypass from `MEM/WB` register to ALU input when instructions are separated by one cycle. |
+| **Load-Use Stall** | Single-cycle pipeline freeze (stalls `IF`/`ID`, inserts `NOP` in `EX`) on `LW` followed by dependent R-type instruction. |
+| **Branch Control Flush** | Clears mispredicted instructions in pipeline when a branch/jump is taken in `EX` stage. |
+
+---
+
+## 🚀 How to Run Simulation
+
+Execute the following commands from the `sim/` directory using AMD Vivado (XSim):
+
+### 1. Compile & Elaborate
+
+```bash
+xvlog -sv -f filelist.f --default_timeunit 1ns/1ps
+xelab riscv_tb_top -debug typical -s tb_top -override_timeunit -timescale 1ns/1ps
