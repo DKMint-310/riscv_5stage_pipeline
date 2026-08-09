@@ -40,6 +40,7 @@ The core implements a classic 5-stage RISC pipeline executing integer instructio
 [ IF Stage ] ──> [ ID Stage ] ──> [ EX Stage ] ──> [ MEM Stage ] ──> [ WB Stage ]
      │                │                 │                  │                 │
      └─────── Hazard Detection ◄────────┴────── Data Forwarding ◄────────────┘
+```
 
 ### Module Components
 
@@ -57,7 +58,7 @@ The core implements a classic 5-stage RISC pipeline executing integer instructio
 
 ---
 
-## 🧪 Hazard Test Scenarios
+## Test Scenarios
 
 | Test Case / Feature | Description |
 |:---|:---|
@@ -68,7 +69,7 @@ The core implements a classic 5-stage RISC pipeline executing integer instructio
 
 ---
 
-## 🚀 How to Run Simulation
+## How to Run Simulation
 
 Execute the following commands from the `sim/` directory using AMD Vivado (XSim):
 
